@@ -35,7 +35,7 @@ dziadek(X, Y) :- ojciec(X, Z), (ojciec(Z, Y); matka(Z, Y)).
 babcia(X, Y) :- matka(X, Z), (ojciec(Z, Y); matka(Z, Y)).
 
 % Wnuk to mê¿czyzna, który jest dzieckiem dziecka:
-wnuk(X, Y) :- mezczyzna(X), (ojciec(Y, Z); matka(Y, Z)), (ojciec(Z, X); matka(Z, X)).
+wnuk(X, Y) :- syn(X, Z), (syn(Z, Y); corka(Z, Y)).
 
 % Wnuczka to kobieta, która jest dzieckiem dziecka:
 wnuczka(X, Y) :- corka(X, Z), (syn(Z, Y); corka(Z, Y)).

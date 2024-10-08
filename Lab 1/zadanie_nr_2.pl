@@ -1,4 +1,5 @@
 % Pierwszy ci¹g: f(n+1) = f(n) + f(n-1), f(0) = 1, f(1) = 1
+% Jeœli f1(N) przyjmuje wartoœæ f to true
 f1(0, 1).  % f(0) = 1
 f1(1, 1).  % f(1) = 1
 f1(N, F) :-
