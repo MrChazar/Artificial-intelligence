@@ -1,0 +1,2 @@
+Alter	Charging	BatAge	BatVolt	MFuse	StMotor	Starter	Plugs	SpkQual	Cranks	Timing	Starts
+okay	faulty	0.781956	weak	blown	okay	okay	okay	good	false	bad	true
