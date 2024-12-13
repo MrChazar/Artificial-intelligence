@@ -1,0 +1,57 @@
+++++++++++++++++++++++++jedna ścieżka:
+
+potomkowie(X) :-
+    format('Dla osoby: ~w~n', [X]),
+    wypisz_potomkow(X, 1, []).
+
+% Reguła dla wypisywania bezpośrednich i pośrednich potomków
+wypisz_potomkow(X, Poziom, Odwiedzeni) :-
+    (   
+        (syn(Potomek, X), opis_relacji(Poziom, syn, Opis));
+        (corka(Potomek, X), opis_relacji(Poziom, corka, Opis));
+        (synowa(Potomek, X), opis_relacji(Poziom, synowa, Opis))
+    ),
+    \+ member(Potomek, Odwiedzeni), % Unikamy powtórzeń
+    format('~w (~w)~n', [Potomek, Opis]),
+    NowyPoziom is Poziom + 1, % Zwiększamy poziom relacji
+    wypisz_potomkow(Potomek, NowyPoziom, [Potomek | Odwiedzeni]). % Rekurencja dla każdego potomka
+wypisz_potomkow(_, _, _). % Warunek stopu dla rekurencji
+
+% Reguły opisujące stopień relacji w zależności od poziomu
+opis_relacji(1, syn, 'syn').
+opis_relacji(1, corka, 'corka').
+opis_relacji(1, synowa, 'synowa').
+opis_relacji(2, syn, 'wnuk').
+opis_relacji(2, corka, 'wnuczka').
+opis_relacji(2, synowa, 'żona wnuka').
+opis_relacji(3, syn, 'prawnuk').
+opis_relacji(3, corka, 'prawnuczka').
+
+
+
+++++++++++++++++++++++++powielane wyniki:
+
+potomkowie(X) :-
+    format('Dla osoby: ~w~n', [X]),
+    wypisz_potomkow(X, 1, []).
+
+% Reguła wypisująca wszystkich potomków X (rekurencyjnie)
+wypisz_potomkow(X, Poziom, Odwiedzeni) :-
+    % Znajdź i wypisz wszystkich potomków
+    (   dziecko(X, Potomek),
+        \+ member(Potomek, Odwiedzeni),   % Sprawdź, czy potomek nie był już odwiedzony
+        opis_relacji(Poziom, Potomek, Opis),
+        format('~w (~w)~n', [Potomek, Opis]),
+        NowyPoziom is Poziom + 1,
+        wypisz_potomkow(Potomek, NowyPoziom, [Potomek | Odwiedzeni]),
+        fail  % Wymusza backtracking, aby znaleźć wszystkich potomków
+    ).
+wypisz_potomkow(_, _, _).  % Warunek stopu dla rekurencji
+
+% Reguła opisująca stopień relacji w zależności od poziomu
+opis_relacji(1, Potomek, 'syn') :- syn(Potomek, _).
+opis_relacji(1, Potomek, 'córka') :- corka(Potomek, _).
+opis_relacji(2, Potomek, 'wnuk') :- syn(Potomek, _).
+opis_relacji(2, Potomek, 'wnuczka') :- corka(Potomek, _).
+opis_relacji(3, Potomek, 'prawnuk') :- syn(Potomek, _).
+opis_relacji(3, Potomek, 'prawnuczka') :- corka(Potomek, _).

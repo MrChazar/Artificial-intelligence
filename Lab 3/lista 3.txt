@@ -1,0 +1,94 @@
+:- dynamic preferencja/2.
+
+% Baza danych samochodów
+samochod('Toyota Corolla', 'bialy', 'sedan', 5, 3, 'skora').
+samochod('BMW X5', 'czarny', 'SUV', 7, 4, 'skora').
+samochod('Honda Civic', 'niebieski', 'sedan', 5, 2, 'skora').
+samochod('Tesla Model S', 'czerwony', 'sedan', 5, 0, 'weganska_skora').
+samochod('Ford Explorer', 'szary', 'SUV', 7, 6, 'material').
+samochod('Audi A4', 'bialy', 'sedan', 5, 3, 'skora').
+samochod('Mercedes-Benz E63', 'srebrny', 'sedan', 5, 6, 'skora').
+samochod('Jeep GrandCherokee', 'czarny', 'SUV', 5, 3, 'material').
+samochod('BMW iX', 'czerwony', 'SUV', 5, 0, 'weganska_skora').
+
+% Dostępne preferencje
+kolor(Preferencja) :- preferencja(kolor, Preferencja).
+typ(Preferencja) :- preferencja(typ, Preferencja).
+miejsca(Preferencja) :- preferencja(miejsca, Preferencja).
+silnik(Preferencja) :- preferencja(silnik, Preferencja).
+wnetrze(Preferencja) :- preferencja(wnetrze, Preferencja).
+
+zapytaj_preferencje :-
+    zapytaj_kolor,
+    zapytaj_typ,
+    zapytaj_miejsca,
+    zapytaj_silnik,
+    zapytaj_wnetrze.
+
+zapytaj_kolor :-
+    write('Jaki kolor preferujesz? '), read(Kolor),
+    assert(preferencja(kolor, Kolor)).
+
+zapytaj_typ :-
+    write('Jaki typ nadwozia (SUV, sedan)? '), read(Typ),
+    assert(preferencja(typ, Typ)).
+
+zapytaj_miejsca :-
+    write('Ile miejsc potrzebujesz? '), read(Miejsca),
+    assert(preferencja(miejsca, Miejsca)).
+
+zapytaj_silnik :-
+    write('Jaka pojemność silnika (liczba całkowita w litrach, 0- samochód elektryczny)? '), read(Silnik),
+    assert(preferencja(silnik, Silnik)).
+
+zapytaj_wnetrze :-
+    write('Jaki materiał we wnętrzu (skora, weganska_skora, material)? '), read(Wnetrze),
+    assert(preferencja(wnetrze, Wnetrze)).
+
+% Funkcja do obliczania wyniku dopasowania i prawdopodobieństwa
+oblicz_prawdopodobienstwo(Kolor, Typ, Miejsca, Silnik, Wnetrze, Prawdopodobienstwo) :-
+    findall(Preferencja, preferencja(_, Preferencja), Preferencje),
+    length(Preferencje, LiczbaPreferencji),
+    (LiczbaPreferencji > 0 ->
+        wynik_dopasowania(Kolor, Typ, Miejsca, Silnik, Wnetrze, Wynik),
+        Prawdopodobienstwo is (Wynik / LiczbaPreferencji) * 100
+    ;
+        Prawdopodobienstwo = 0).
+
+% Funkcja do obliczania punktów za dopasowanie
+wynik_dopasowania(Kolor, Typ, Miejsca, Silnik, Wnetrze, Wynik) :-
+    (kolor(Kolor) -> PunktyKolor = 1 ; PunktyKolor = 0),
+    (typ(Typ) -> PunktyTyp = 1 ; PunktyTyp = 0),
+    (miejsca(Miejsca) -> PunktyMiejsca = 1 ; PunktyMiejsca = 0),
+    (silnik(Silnik) -> PunktySilnik = 1 ; PunktySilnik = 0),
+    (wnetrze(Wnetrze) -> PunktyWnetrze = 1 ; PunktyWnetrze = 0),
+    Wynik is PunktyKolor + PunktyTyp + PunktyMiejsca + PunktySilnik + PunktyWnetrze.
+
+% Zbieranie wyników i sortowanie
+zbierz_rekomendacje(ListaWynikow) :-
+    findall((Model, Prawdopodobienstwo),
+            (samochod(Model, Kolor, Typ, Miejsca, Silnik, Wnetrze),
+             oblicz_prawdopodobienstwo(Kolor, Typ, Miejsca, Silnik, Wnetrze, Prawdopodobienstwo),
+             Prawdopodobienstwo > 0),
+            ListaWynikow).
+
+% Sortowanie wyników malejąco według prawdopodobieństwa
+rekomenduj_samochod :-
+    zbierz_rekomendacje(ListaWynikow),
+    sort(2, @>=, ListaWynikow, PosortowaneWyniki),  % Sortowanie po prawdopodobieństwie malejąco
+    wyswietl_rekomendacje(PosortowaneWyniki).
+
+% Wyświetlanie wyników
+wyswietl_rekomendacje([]) :-
+    nl.
+wyswietl_rekomendacje([(Model, Prawdopodobienstwo)|Reszta]) :-
+    write('Polecamy nastepujacy samochod: '), write(Model),
+    write(' z prawdopodobienstwem: '), write(Prawdopodobienstwo), write('%'), nl,
+    wyswietl_rekomendacje(Reszta).
+
+dealer_samochodowy :-
+    write_ln('Witamy w systemie eksperckim dealera samochodowego!'), nl,
+    zapytaj_preferencje, nl,
+    write_ln('Na podstawie twoich preferencji sugerujemy: '),
+    (rekomenduj_samochod ; write('Brak dokladnych dopasowan.')),
+    retractall(preferencja(_, _)).

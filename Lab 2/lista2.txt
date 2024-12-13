@@ -1,0 +1,178 @@
+% Zadanie nr 1
+% Kobiety
+kobieta(maria).
+kobieta(agnieszka).
+kobieta(paulina).
+kobieta(julia).
+kobieta(anna).
+kobieta(kasia).
+
+% Małżeństwa
+malzenstwo(jan, maria).
+malzenstwo(adam, agnieszka).
+malzenstwo(pawel, julia).
+malzenstwo(marian, paulina).
+malzenstwo(tomasz, anna).
+
+% Dzieci
+% rodzic, dziecko
+dziecko(jan, adam).
+dziecko(jan, paulina).
+dziecko(jan, tymoteusz).
+dziecko(tomasz, julia).
+dziecko(adam, pawel).
+dziecko(adam, kasia).
+dziecko(marian, mateusz).
+dziecko(maria, adam).
+dziecko(maria, paulina).
+dziecko(maria, tymoteusz).
+dziecko(anna, julia).
+dziecko(agnieszka, pawel).
+dziecko(agnieszka, kasia).
+dziecko(paulina, mateusz).
+
+% Zadanie nr 2
+dziadek(X, Y) :- dziecko(Z, Y), dziecko(X, Z), not(kobieta(X)).
+babcia(X, Y) :- dziecko(Z, Y), dziecko(X, Z), kobieta(X).
+pradziadek(X, Y) :- (dziadek(Z, Y); babcia(Z,Y)), dziecko(X, Z), not(kobieta(X)).
+prababcia(X, Y) :- (babcia(Z, Y); dziadek(Z,Y)), dziecko(X, Z), kobieta(X).
+corka(X, Y) :- kobieta(X),dziecko(Y, X).
+% X to syn/corka a Y to ojciec/matka
+syn(X, Y) :- dziecko(Y, X), not(kobieta(X)).
+brat(X, Y) :- syn(X,Z),dziecko(Z,Y),X\=Y, kobieta(Z).
+siostra(X, Y) :- corka(X, Z),dziecko(Z,Y),X\=Y, kobieta(Z).
+matka(X, Y) :- dziecko(X, Y),kobieta(X).
+ojciec(X, Y) :- dziecko(X, Y),not(kobieta(X)).
+ziec(X, Y) :- corka(Z, Y), malzenstwo(X, Z).
+wnuk(X, Y) :- dziecko(Z, X), syn(X, Z), potomek(Z, Y).
+wnuczka(X, Y) :- dziecko(Z, X), corka(X, Z), potomek(Z, Y).
+szwagier(X, Y) :- malzenstwo(Y, Z), brat(X, Z); malzenstwo(X, S), siostra(S, Y).
+synowa(X, Y) :- syn(Z, Y), kobieta(X),malzenstwo(Z, X).
+bratowa(X, Y) :- kobieta(X),brat(Z, Y), malzenstwo(Z,X).
+wuj(X, Y) :-
+    brat(X, Z), (matka(Z, Y); ojciec(Z, Y)).
+wuj(X, Y) :-
+    malzenstwo(X, Z), siostra(Z, P), (matka(P, Y); ojciec(P, Y)).
+ciotka(X, Y) :-
+    siostra(X, Z), (matka(Z, Y); ojciec(Z, Y)).
+ciotka(X, Y) :-
+    malzenstwo(X, Z), brat(Z, P), (matka(P, Y); ojciec(P, Y)).
+
+wuj1(X, Y) :-
+    brat(X, Z), (matka(Z, Y); ojciec(Z, Y)).
+kuzyn(X, Y) :-
+    (ciotka(Z, Y); wuj1(Z, Y)),
+    syn(X, Z).
+
+kuzynka(X, Y) :-
+    (ciotka(Z, Y); wuj(Z, Y)),
+    corka(X, Z).
+
+jest_w(X,[G|Y]) :-  G=X;jest_w(X, Y),!.
+
+zbierz_imiona(Akumulator, Lista_osob, Rola) :-
+    call(Rola, Osoba, _),
+    not(jest_w(Osoba, Akumulator)),
+    zbierz_imiona([Osoba|Akumulator], Lista_osob, Rola).
+zbierz_imiona(X, X, _).
+
+dziadek(X) :-
+    zbierz_imiona([], X, dziadek), !.
+
+pradziadek(X) :-
+    zbierz_imiona([], X, pradziadek), !.
+
+prababcia(X) :-
+    zbierz_imiona([], X, prababcia), !.
+
+babcia(X) :-
+    zbierz_imiona([], X, babcia), !.
+
+corka(X) :-
+    zbierz_imiona([], X, corka), !.
+
+syn(X) :-
+    zbierz_imiona([], X, syn), !.
+
+brat(X) :-
+    zbierz_imiona([], X, brat), !.
+
+siostra(X) :-
+    zbierz_imiona([], X, siostra), !.
+
+ojciec(X) :-
+    zbierz_imiona([], X, ojciec), !.
+
+matka(X) :-
+    zbierz_imiona([], X, matka), !.
+
+szwagier(X) :-
+    zbierz_imiona([], X, szwagier), !.
+
+ziec(X) :-
+    zbierz_imiona([], X, ziec), !.
+
+bratowa(X) :-
+    zbierz_imiona([], X, bratowa), !.
+
+synowa(X) :-
+    zbierz_imiona([], X, synowa), !.
+
+wuj(X) :-
+    zbierz_imiona([], X, wuj), !.
+
+ciotka(X) :-
+    zbierz_imiona([], X, ciotka), !.
+
+kuzyn(X) :-
+    zbierz_imiona([], X, kuzyn), !.
+
+kuzynka(X) :-
+    zbierz_imiona([], X, kuzynka), !.
+
+% Zadanie 3
+potomek(X, Y):- dziecko(Y, X).
+potomek(Z, X):- dziecko(Y, Z), potomek(Y, X).
+
+przodek(X, Y):- dziecko(X, Y).
+przodek(X, Z):- dziecko(X, Y), przodek(Y, Z).
+
+przodek_lista(X,Y):- zbierz_imiona2([], X, przodek, Y).
+potomek_lista(X,Y):- zbierz_imiona2([], X, potomek, Y).
+
+zbierz_imiona2(Aku, Lista_osob, F, Imie) :-
+    call(F, Imie, Osoba),
+    not(jest_w(Osoba, Aku)),
+    zbierz_imiona2([Osoba|Aku], Lista_osob, F, Imie).
+zbierz_imiona2(X, X, _, _).
+len([], 0).
+len([_|O],L):-len(O,N), L is N+1.
+
+% Y potomków Xsa
+l_potomkow(X, Y):-
+    przodek_lista(Z, X),len(Z, Y), !.
+
+% Y przodków Xsa
+l_przodkow(X, Y):-
+    potomek_lista(Z, X),len(Z, Y), !.
+
+% Zadanie 4
+
+% Wprowadzenie do opisu relacji
+relacja(Potomek, 'syn', Rodzic) :- syn(Potomek, Rodzic).
+relacja(Potomek, 'córka', Rodzic) :- corka(Potomek, Rodzic).
+relacja(Potomek, 'synowa', Rodzic) :- synowa(Potomek, Rodzic).
+relacja(Potomek, 'zieć', Rodzic) :- ziec(Potomek, Rodzic).
+relacja(Potomek, 'brat', Rodzic) :- brat(Potomek, Rodzic).
+relacja(Potomek, 'siostra', Rodzic) :- siostra(Potomek, Rodzic).
+relacja(Potomek, 'wnuk', Rodzic) :- wnuk(Potomek, Rodzic).
+relacja(Potomek, 'wnuczka', Rodzic) :- wnuczka(Potomek, Rodzic).
+
+potomkowie(Rodzic) :-
+    potomek(Potomek, Rodzic),
+    relacja(Potomek, Relacja, Rodzic),
+    format('~w (~w), ~n', [Potomek, Relacja]),
+    fail. %powtarzanie dla wszystkich potomków
+potomkowie(_) :-
+    nl. %koniec
+
